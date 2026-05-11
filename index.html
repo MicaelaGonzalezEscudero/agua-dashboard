@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;font-family:system-ui,-apple-system,sans-serif;color:rgba(255,255,255,0.92)}
 .dash{width:100%;max-width:680px}
-.glass{background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);border-radius:16px;backdrop-filter:blur(12px)}
+.glass{background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);border-radius:16px}
 .glass-soft{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px}
 .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px}
 .metric-card{padding:14px}
@@ -58,19 +58,19 @@ body{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min-
         <button class="tab" onclick="showView('semana',this)">Semana</button>
         <button class="tab" onclick="showView('mes',this)">Mes</button>
       </div>
-      <button class="refresh-btn" onclick="triggerRefresh(this)" id="refresh-btn">↻ Actualizar</button>
+      <button class="refresh-btn" onclick="triggerRefresh(this)">↻ Actualizar</button>
     </div>
   </div>
 
   <div id="view-dia" class="view active">
     <div class="metric-grid">
-      <div class="metric-card glass-soft"><div class="label">Hoy</div><div class="value" style="color:#fca5a5">0%</div><div class="sub">0 ml</div></div>
+      <div class="metric-card glass-soft"><div class="label">Hoy</div><div class="value" style="color:#a78bfa">50%</div><div class="sub">1000 ml</div></div>
       <div class="metric-card glass-soft"><div class="label">Racha</div><div class="value" style="color:#a78bfa">0</div><div class="sub">sin racha</div></div>
-      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:#5eead4">0%</div><div class="sub">30 días</div></div>
+      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:#a78bfa">50%</div><div class="sub">30 días</div></div>
     </div>
     <div class="row">
       <div class="glass bottle-wrap">
-        <div class="pct-label" style="color:#fca5a5">0%</div>
+        <div class="pct-label" style="color:#a78bfa">50%</div>
         <svg width="80" height="180" viewBox="0 0 80 180">
           <defs>
             <clipPath id="bc"><rect x="10" y="26" width="60" height="142" rx="14"/></clipPath>
@@ -87,135 +87,47 @@ body{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min-
           </defs>
           <rect x="26" y="6" width="28" height="22" rx="6" fill="rgba(167,139,250,0.25)" stroke="rgba(167,139,250,0.4)" stroke-width="1"/>
           <rect x="10" y="26" width="60" height="142" rx="14" fill="url(#bg)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-          <rect x="10" y="168" width="60" height="0" fill="url(#fg)" clip-path="url(#bc)"/>
+          <rect x="10" y="97" width="60" height="71" fill="url(#fg)" clip-path="url(#bc)"/>
           <rect x="18" y="34" width="5" height="90" rx="2.5" fill="rgba(255,255,255,0.1)"/>
-          <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="500" fill="rgba(255,255,255,0.85)">0 ml</text>
+          <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="500" fill="rgba(255,255,255,0.85)">1000 ml</text>
         </svg>
-        <div class="pct-sub">0 / 4 comidas</div>
+        <div class="pct-sub">2 / 4 comidas</div>
       </div>
       <div class="glass panel-pad">
         <div class="section-title">Desglose por comida</div>
-        <div class="comida-row">
-            <div class="comida-name">Desayuno</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:rgba(255,255,255,0.2)"></div></div>
-            <span style="font-size:14px;color:rgba(255,255,255,0.2)">–</span>
-        </div><div class="comida-row">
-            <div class="comida-name">Almuerzo</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:rgba(255,255,255,0.2)"></div></div>
-            <span style="font-size:14px;color:rgba(255,255,255,0.2)">–</span>
-        </div><div class="comida-row">
-            <div class="comida-name">Merienda</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:rgba(255,255,255,0.2)"></div></div>
-            <span style="font-size:14px;color:rgba(255,255,255,0.2)">–</span>
-        </div><div class="comida-row">
-            <div class="comida-name">Cena</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div>
-            <span style="font-size:14px;color:#fca5a5">✗</span>
-        </div>
+        <div class="comida-row"><div class="comida-name">Desayuno</div><div class="comida-bar-bg"><div class="comida-bar" style="width:100%;background:#5eead4"></div></div><span style="font-size:14px;color:#5eead4">✓</span></div><div class="comida-row"><div class="comida-name">Almuerzo</div><div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:rgba(255,255,255,0.2)"></div></div><span style="font-size:14px;color:rgba(255,255,255,0.2)">–</span></div><div class="comida-row"><div class="comida-name">Merienda</div><div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div><span style="font-size:14px;color:#fca5a5">✗</span></div><div class="comida-row"><div class="comida-name">Cena</div><div class="comida-bar-bg"><div class="comida-bar" style="width:100%;background:#5eead4"></div></div><span style="font-size:14px;color:#5eead4">✓</span></div>
       </div>
     </div>
     <div class="glass panel-pad">
       <div class="section-title">Esta semana</div>
-      <div class="week-grid"><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Lun</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Mar</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Mié</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Jue</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Vie</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Sáb</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:#a78bfa">Dom</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div></div>
+      <div class="week-grid"><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Lun</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Mar</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Mié</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Jue</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Vie</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Sáb</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:#a78bfa">Dom</div><div class="day-bar-wrap"><div class="day-bar" style="height:36%;background:#a78bfa"></div></div><div class="day-pct">50%</div></div></div>
     </div>
   </div>
 
   <div id="view-semana" class="view">
     <div class="metric-grid">
-      <div class="metric-card glass-soft"><div class="label">Promedio semana</div><div class="value" style="color:#fca5a5">0%</div><div class="sub">esta semana</div></div>
+      <div class="metric-card glass-soft"><div class="label">Promedio semana</div><div class="value" style="color:#fca5a5">7%</div><div class="sub">esta semana</div></div>
       <div class="metric-card glass-soft"><div class="label">Racha</div><div class="value" style="color:#a78bfa">0</div><div class="sub">días seguidos</div></div>
-      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:#5eead4">0%</div><div class="sub">30 días</div></div>
+      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:#a78bfa">50%</div><div class="sub">30 días</div></div>
     </div>
     <div class="glass panel-pad" style="margin-bottom:12px">
       <div class="section-title">Rendimiento esta semana</div>
-      <div class="week-grid" style="margin-bottom:14px"><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Lun</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Mar</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Mié</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Jue</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Vie</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:rgba(255,255,255,0.45)">Sáb</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div><div class="day-col">
-            <div class="day-name" style="color:#a78bfa">Dom</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div>
-            <div class="day-pct">0%</div>
-        </div></div>
+      <div class="week-grid" style="margin-bottom:14px"><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Lun</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Mar</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Mié</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Jue</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Vie</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:rgba(255,255,255,0.45)">Sáb</div><div class="day-bar-wrap"><div class="day-bar" style="height:0%;background:#fca5a5"></div></div><div class="day-pct">0%</div></div><div class="day-col"><div class="day-name" style="color:#a78bfa">Dom</div><div class="day-bar-wrap"><div class="day-bar" style="height:36%;background:#a78bfa"></div></div><div class="day-pct">50%</div></div></div>
       <div class="section-title">Por comida esta semana</div>
-      <div class="comida-row">
-            <div class="comida-name">Desayuno</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:rgba(255,255,255,0.2)"></div></div>
-            <span style="font-size:14px;color:rgba(255,255,255,0.2)">–</span>
-        </div><div class="comida-row">
-            <div class="comida-name">Almuerzo</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:rgba(255,255,255,0.2)"></div></div>
-            <span style="font-size:14px;color:rgba(255,255,255,0.2)">–</span>
-        </div><div class="comida-row">
-            <div class="comida-name">Merienda</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:rgba(255,255,255,0.2)"></div></div>
-            <span style="font-size:14px;color:rgba(255,255,255,0.2)">–</span>
-        </div><div class="comida-row">
-            <div class="comida-name">Cena</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div>
-            <span style="font-size:14px;color:#fca5a5">✗</span>
-        </div>
+      <div class="comida-row"><div class="comida-name">Desayuno</div><div class="comida-bar-bg"><div class="comida-bar" style="width:100%;background:#5eead4"></div></div><span style="font-size:14px;color:#5eead4">✓</span></div><div class="comida-row"><div class="comida-name">Almuerzo</div><div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:rgba(255,255,255,0.2)"></div></div><span style="font-size:14px;color:rgba(255,255,255,0.2)">–</span></div><div class="comida-row"><div class="comida-name">Merienda</div><div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div><span style="font-size:14px;color:#fca5a5">✗</span></div><div class="comida-row"><div class="comida-name">Cena</div><div class="comida-bar-bg"><div class="comida-bar" style="width:100%;background:#5eead4"></div></div><span style="font-size:14px;color:#5eead4">✓</span></div>
     </div>
   </div>
 
   <div id="view-mes" class="view">
     <div class="metric-grid">
-      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:#fca5a5">0%</div><div class="sub">30 días</div></div>
+      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:#a78bfa">50%</div><div class="sub">30 días</div></div>
       <div class="metric-card glass-soft"><div class="label">Días perfectos</div><div class="value" style="color:#5eead4">0</div><div class="sub">100% del día</div></div>
       <div class="metric-card glass-soft"><div class="label">Racha</div><div class="value" style="color:#a78bfa">0</div><div class="sub">días seguidos</div></div>
       <div class="metric-card glass-soft"><div class="label">Tendencia</div><div class="value" style="color:#fca5a5">↓</div><div class="sub">vs promedio</div></div>
     </div>
     <div class="glass panel-pad">
       <div class="section-title">Últimos 30 días</div>
-      <div class="month-grid"><div class="month-dot" style="background:#fca5a5;opacity:0.25" title="10/05/2026: 0%"></div></div>
+      <div class="month-grid"><div class="month-dot" style="background:#a78bfa;opacity:0.62" title="10/05/2026: 50%"></div></div>
       <div class="legend-row">
         <span><span class="leg-dot" style="background:#5eead4"></span>75–100%</span>
         <span><span class="leg-dot" style="background:#a78bfa"></span>50–74%</span>
@@ -223,29 +135,12 @@ body{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min-
         <span><span class="leg-dot" style="background:#fca5a5"></span>0–24%</span>
       </div>
       <div class="section-title">Por comida este mes</div>
-      <div class="comida-row">
-            <div class="comida-name">Desayuno</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div>
-            <div class="comida-pct">0%</div>
-        </div><div class="comida-row">
-            <div class="comida-name">Almuerzo</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div>
-            <div class="comida-pct">0%</div>
-        </div><div class="comida-row">
-            <div class="comida-name">Merienda</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div>
-            <div class="comida-pct">0%</div>
-        </div><div class="comida-row">
-            <div class="comida-name">Cena</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div>
-            <div class="comida-pct">0%</div>
-        </div>
+      <div class="comida-row"><div class="comida-name">Desayuno</div><div class="comida-bar-bg"><div class="comida-bar" style="width:100%;background:#5eead4"></div></div><div class="comida-pct">100%</div></div><div class="comida-row"><div class="comida-name">Almuerzo</div><div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div><div class="comida-pct">0%</div></div><div class="comida-row"><div class="comida-name">Merienda</div><div class="comida-bar-bg"><div class="comida-bar" style="width:0%;background:#fca5a5"></div></div><div class="comida-pct">0%</div></div><div class="comida-row"><div class="comida-name">Cena</div><div class="comida-bar-bg"><div class="comida-bar" style="width:100%;background:#5eead4"></div></div><div class="comida-pct">100%</div></div>
     </div>
   </div>
 
-  <div class="updated">Actualizado: 10/05/2026 21:46</div>
+  <div class="updated">Actualizado: 10/05/2026 22:15</div>
 </div>
-
 <script>
 function showView(view, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -253,29 +148,22 @@ function showView(view, btn) {
   document.getElementById('view-' + view).classList.add('active');
   btn.classList.add('active');
 }
-
 function triggerRefresh(btn) {
   btn.disabled = true;
   btn.textContent = '↻ Actualizando...';
   fetch('https://api.github.com/repos/MicaelaGonzalezEscudero/agua-dashboard/actions/workflows/generate_dashboard.yml/dispatches', {
     method: 'POST',
-    headers: {
-      'Authorization': 'token ',
-      'Content-Type': 'application/json'
-    },
+    headers: {'Authorization': 'token ', 'Content-Type': 'application/json'},
     body: JSON.stringify({ref: 'main'})
   }).then(r => {
     if (r.status === 204) {
       btn.textContent = '✓ Generando...';
-      setTimeout(() => { window.location.reload(); }, 25000);
+      setTimeout(() => window.location.reload(), 25000);
     } else {
       btn.textContent = '↻ Actualizar';
       btn.disabled = false;
     }
-  }).catch(() => {
-    btn.textContent = '↻ Actualizar';
-    btn.disabled = false;
-  });
+  }).catch(() => { btn.textContent = '↻ Actualizar'; btn.disabled = false; });
 }
 </script>
 </body>
