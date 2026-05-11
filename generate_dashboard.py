@@ -7,7 +7,15 @@ from google.oauth2.service_account import Credentials
 GOOGLE_CREDENTIALS = os.environ["GOOGLE_CREDENTIALS"]
 GOOGLE_SHEET_ID = os.environ["GOOGLE_SHEET_ID"]
 BA_TZ = timezone(timedelta(hours=-3))
-COMIDAS = ['Desayuno', 'Almuerzo', 'Merienda', 'Cena']
+
+TIPOS = ['Desayuno', 'Almuerzo', 'Merienda', 'Cena']
+
+def get_tipo(nombre):
+    n = nombre.lower()
+    for t in TIPOS:
+        if t.lower() in n:
+            return t
+    return None
 
 def get_sheet_data():
     creds_dict = json.loads(GOOGLE_CREDENTIALS)
@@ -25,19 +33,27 @@ def process_data(records):
         fecha = str(r.get('Fecha', ''))
         comida_raw = str(r.get('Comida', ''))
         tomo = str(r.get('Tomó agua', ''))
-        comida = next((c for c in COMIDAS if c.lower() in comida_raw.lower()), None)
-        if comida is None:
+        tipo = get_tipo(comida_raw)
+        if tipo is None:
             continue
         if fecha not in data:
             data[fecha] = {}
-        data[fecha][comida] = 'si' if 'Sí' in tomo or 'si' in tomo.lower() else 'no'
+        val = 'si' if 'Sí' in tomo or ('si' in tomo.lower() and 'no' not in tomo.lower()) else 'no'
+        if tipo not in data[fecha] or val == 'si':
+            data[fecha][tipo] = val
     return data
 
 def get_day_pct(day_data):
     if not day_data:
         return 0
-    si = sum(1 for v in day_data.values() if v == 'si')
-    return round(si / len(COMIDAS) * 100)
+    si = sum(1 for t in TIPOS if day_data.get(t) == 'si')
+    return round(si / len(TIPOS) * 100)
+
+def get_color(pct):
+    if pct >= 75: return '#5eead4'
+    if pct >= 50: return '#a78bfa'
+    if pct >= 25: return '#fcd34d'
+    return '#fca5a5'
 
 def generate_html(data):
     today = datetime.now(BA_TZ)
@@ -45,20 +61,18 @@ def generate_html(data):
     updated_at = today.strftime('%d/%m/%Y %H:%M')
 
     print(f"Today key: {today_key}")
-    print(f"Datos encontrados: {data}")
+    print(f"Datos: {data}")
 
     all_dates = sorted(data.keys(), key=lambda d: datetime.strptime(d, '%d/%m/%Y') if d else datetime.min)
     last_30 = all_dates[-30:] if len(all_dates) >= 30 else all_dates
 
     today_data = data.get(today_key, {})
     today_pct = get_day_pct(today_data)
-    today_ml = sum(1 for v in today_data.values() if v == 'si') * 500
-    today_si = sum(1 for v in today_data.values() if v == 'si')
+    today_si = sum(1 for t in TIPOS if today_data.get(t) == 'si')
+    today_ml = today_si * 500
+    bottle_color = get_color(today_pct)
 
-    week_dates = []
-    for i in range(6, -1, -1):
-        d = today - timedelta(days=i)
-        week_dates.append(d.strftime('%d/%m/%Y'))
+    week_dates = [(today - timedelta(days=i)).strftime('%d/%m/%Y') for i in range(6, -1, -1)]
     week_pcts = [get_day_pct(data.get(d, {})) for d in week_dates]
     week_avg = round(sum(week_pcts) / len(week_pcts)) if week_pcts else 0
 
@@ -74,64 +88,60 @@ def generate_html(data):
             break
 
     dias_labels = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
-    week_days_labels = [dias_labels[datetime.strptime(d, '%d/%m/%Y').weekday() + 1 if datetime.strptime(d, '%d/%m/%Y').weekday() < 6 else 0] for d in week_dates]
 
-    week_bars_html = ''
-    for i, d in enumerate(week_dates):
-        p = week_pcts[i]
-        h = round(p * 0.72)
-        is_today = d == today_key
-        col = '#5eead4' if p >= 75 else '#a78bfa' if p >= 50 else '#fcd34d' if p >= 25 else '#fca5a5'
-        label_color = '#a78bfa' if is_today else 'rgba(255,255,255,0.45)'
-        week_bars_html += f'''<div class="day-col">
-            <div class="day-name" style="color:{label_color}">{week_days_labels[i]}</div>
-            <div class="day-bar-wrap"><div class="day-bar" style="height:{h}%;background:{col}"></div></div>
-            <div class="day-pct">{p}%</div>
-        </div>'''
+    def week_bars():
+        html = ''
+        for i, d in enumerate(week_dates):
+            p = week_pcts[i]
+            h = round(p * 0.72)
+            is_today = d == today_key
+            col = get_color(p)
+            dow = datetime.strptime(d, '%d/%m/%Y').weekday()
+            label = dias_labels[(dow + 1) % 7]
+            lc = '#a78bfa' if is_today else 'rgba(255,255,255,0.45)'
+            html += f'<div class="day-col"><div class="day-name" style="color:{lc}">{label}</div><div class="day-bar-wrap"><div class="day-bar" style="height:{h}%;background:{col}"></div></div><div class="day-pct">{p}%</div></div>'
+        return html
 
-    comida_rows_html = ''
-    for c in COMIDAS:
-        val = today_data.get(c, None)
-        if val == 'si':
-            col, icon = '#5eead4', '✓'
-        elif val == 'no':
-            col, icon = '#fca5a5', '✗'
-        else:
-            col, icon = 'rgba(255,255,255,0.2)', '–'
-        bar_w = 100 if val == 'si' else 0
-        comida_rows_html += f'''<div class="comida-row">
-            <div class="comida-name">{c}</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:{bar_w}%;background:{col}"></div></div>
-            <span style="font-size:14px;color:{col}">{icon}</span>
-        </div>'''
+    def comida_rows(day_d):
+        html = ''
+        for t in TIPOS:
+            val = day_d.get(t)
+            if val == 'si': col, icon = '#5eead4', '✓'
+            elif val == 'no': col, icon = '#fca5a5', '✗'
+            else: col, icon = 'rgba(255,255,255,0.2)', '–'
+            bw = 100 if val == 'si' else 0
+            html += f'<div class="comida-row"><div class="comida-name">{t}</div><div class="comida-bar-bg"><div class="comida-bar" style="width:{bw}%;background:{col}"></div></div><span style="font-size:14px;color:{col}">{icon}</span></div>'
+        return html
 
-    month_dots_html = ''
-    for d in last_30:
-        p = get_day_pct(data.get(d, {}))
-        col = '#5eead4' if p >= 75 else '#a78bfa' if p >= 50 else '#fcd34d' if p >= 25 else '#fca5a5'
-        op = round(0.25 + p/100*0.75, 2)
-        month_dots_html += f'<div class="month-dot" style="background:{col};opacity:{op}" title="{d}: {p}%"></div>'
+    def month_dots():
+        html = ''
+        for d in last_30:
+            p = get_day_pct(data.get(d, {}))
+            col = get_color(p)
+            op = round(0.25 + p/100*0.75, 2)
+            html += f'<div class="month-dot" style="background:{col};opacity:{op}" title="{d}: {p}%"></div>'
+        return html
 
-    comida_month_html = ''
-    for c in COMIDAS:
-        si = sum(1 for d in last_30 if data.get(d, {}).get(c) == 'si')
-        pct = round(si / len(last_30) * 100) if last_30 else 0
-        col = '#5eead4' if pct >= 75 else '#a78bfa' if pct >= 50 else '#fcd34d' if pct >= 25 else '#fca5a5'
-        comida_month_html += f'''<div class="comida-row">
-            <div class="comida-name">{c}</div>
-            <div class="comida-bar-bg"><div class="comida-bar" style="width:{pct}%;background:{col}"></div></div>
-            <div class="comida-pct">{pct}%</div>
-        </div>'''
+    def comida_month():
+        html = ''
+        for t in TIPOS:
+            si = sum(1 for d in last_30 if data.get(d, {}).get(t) == 'si')
+            pct = round(si / len(last_30) * 100) if last_30 else 0
+            col = get_color(pct)
+            html += f'<div class="comida-row"><div class="comida-name">{t}</div><div class="comida-bar-bg"><div class="comida-bar" style="width:{pct}%;background:{col}"></div></div><div class="comida-pct">{pct}%</div></div>'
+        return html
 
     fill_h = round(today_pct / 100 * 142)
     fill_y = 168 - fill_h
-    bottle_color = '#5eead4' if today_pct >= 75 else '#a78bfa' if today_pct >= 50 else '#fcd34d' if today_pct >= 25 else '#fca5a5'
-
     dias_perfectos = sum(1 for d in last_30 if get_day_pct(data.get(d, {})) == 100)
-    tendencia_col = '#5eead4' if sum(week_pcts[-7:]) / 7 > month_avg else '#fca5a5'
-    tendencia = '↑' if sum(week_pcts[-7:]) / 7 > month_avg else '↓'
+    tend_val = sum(week_pcts[-7:]) / 7 if week_pcts else 0
+    tendencia_col = '#5eead4' if tend_val > month_avg else '#fca5a5'
+    tendencia = '↑' if tend_val > month_avg else '↓'
+    week_avg_col = get_color(week_avg)
+    month_avg_col = get_color(month_avg)
+    gh_pat = os.environ.get("GH_PAT", "")
 
-    html = f'''<!DOCTYPE html>
+    return f'''<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -141,7 +151,7 @@ def generate_html(data):
 *{{box-sizing:border-box;margin:0;padding:0}}
 body{{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;font-family:system-ui,-apple-system,sans-serif;color:rgba(255,255,255,0.92)}}
 .dash{{width:100%;max-width:680px}}
-.glass{{background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);border-radius:16px;backdrop-filter:blur(12px)}}
+.glass{{background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);border-radius:16px}}
 .glass-soft{{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px}}
 .metric-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px}}
 .metric-card{{padding:14px}}
@@ -191,7 +201,7 @@ body{{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min
         <button class="tab" onclick="showView('semana',this)">Semana</button>
         <button class="tab" onclick="showView('mes',this)">Mes</button>
       </div>
-      <button class="refresh-btn" onclick="triggerRefresh(this)" id="refresh-btn">↻ Actualizar</button>
+      <button class="refresh-btn" onclick="triggerRefresh(this)">↻ Actualizar</button>
     </div>
   </div>
 
@@ -199,7 +209,7 @@ body{{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min
     <div class="metric-grid">
       <div class="metric-card glass-soft"><div class="label">Hoy</div><div class="value" style="color:{bottle_color}">{today_pct}%</div><div class="sub">{today_ml} ml</div></div>
       <div class="metric-card glass-soft"><div class="label">Racha</div><div class="value" style="color:#a78bfa">{streak}</div><div class="sub">{'días seguidos' if streak > 0 else 'sin racha'}</div></div>
-      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:#5eead4">{month_avg}%</div><div class="sub">30 días</div></div>
+      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:{month_avg_col}">{month_avg}%</div><div class="sub">30 días</div></div>
     </div>
     <div class="row">
       <div class="glass bottle-wrap">
@@ -224,43 +234,43 @@ body{{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min
           <rect x="18" y="34" width="5" height="90" rx="2.5" fill="rgba(255,255,255,0.1)"/>
           <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="500" fill="rgba(255,255,255,0.85)">{today_ml} ml</text>
         </svg>
-        <div class="pct-sub">{today_si} / {len(COMIDAS)} comidas</div>
+        <div class="pct-sub">{today_si} / {len(TIPOS)} comidas</div>
       </div>
       <div class="glass panel-pad">
         <div class="section-title">Desglose por comida</div>
-        {comida_rows_html}
+        {comida_rows(today_data)}
       </div>
     </div>
     <div class="glass panel-pad">
       <div class="section-title">Esta semana</div>
-      <div class="week-grid">{week_bars_html}</div>
+      <div class="week-grid">{week_bars()}</div>
     </div>
   </div>
 
   <div id="view-semana" class="view">
     <div class="metric-grid">
-      <div class="metric-card glass-soft"><div class="label">Promedio semana</div><div class="value" style="color:{'#5eead4' if week_avg>=75 else '#a78bfa' if week_avg>=50 else '#fcd34d' if week_avg>=25 else '#fca5a5'}">{week_avg}%</div><div class="sub">esta semana</div></div>
+      <div class="metric-card glass-soft"><div class="label">Promedio semana</div><div class="value" style="color:{week_avg_col}">{week_avg}%</div><div class="sub">esta semana</div></div>
       <div class="metric-card glass-soft"><div class="label">Racha</div><div class="value" style="color:#a78bfa">{streak}</div><div class="sub">días seguidos</div></div>
-      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:#5eead4">{month_avg}%</div><div class="sub">30 días</div></div>
+      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:{month_avg_col}">{month_avg}%</div><div class="sub">30 días</div></div>
     </div>
     <div class="glass panel-pad" style="margin-bottom:12px">
       <div class="section-title">Rendimiento esta semana</div>
-      <div class="week-grid" style="margin-bottom:14px">{week_bars_html}</div>
+      <div class="week-grid" style="margin-bottom:14px">{week_bars()}</div>
       <div class="section-title">Por comida esta semana</div>
-      {comida_rows_html}
+      {comida_rows(today_data)}
     </div>
   </div>
 
   <div id="view-mes" class="view">
     <div class="metric-grid">
-      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:{'#5eead4' if month_avg>=75 else '#a78bfa' if month_avg>=50 else '#fcd34d' if month_avg>=25 else '#fca5a5'}">{month_avg}%</div><div class="sub">30 días</div></div>
+      <div class="metric-card glass-soft"><div class="label">Promedio mes</div><div class="value" style="color:{month_avg_col}">{month_avg}%</div><div class="sub">30 días</div></div>
       <div class="metric-card glass-soft"><div class="label">Días perfectos</div><div class="value" style="color:#5eead4">{dias_perfectos}</div><div class="sub">100% del día</div></div>
       <div class="metric-card glass-soft"><div class="label">Racha</div><div class="value" style="color:#a78bfa">{streak}</div><div class="sub">días seguidos</div></div>
       <div class="metric-card glass-soft"><div class="label">Tendencia</div><div class="value" style="color:{tendencia_col}">{tendencia}</div><div class="sub">vs promedio</div></div>
     </div>
     <div class="glass panel-pad">
       <div class="section-title">Últimos 30 días</div>
-      <div class="month-grid">{month_dots_html}</div>
+      <div class="month-grid">{month_dots()}</div>
       <div class="legend-row">
         <span><span class="leg-dot" style="background:#5eead4"></span>75–100%</span>
         <span><span class="leg-dot" style="background:#a78bfa"></span>50–74%</span>
@@ -268,13 +278,12 @@ body{{background:linear-gradient(135deg,#1a0533 0%,#0d1a3a 40%,#0a2a1a 100%);min
         <span><span class="leg-dot" style="background:#fca5a5"></span>0–24%</span>
       </div>
       <div class="section-title">Por comida este mes</div>
-      {comida_month_html}
+      {comida_month()}
     </div>
   </div>
 
   <div class="updated">Actualizado: {updated_at}</div>
 </div>
-
 <script>
 function showView(view, btn) {{
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -282,34 +291,26 @@ function showView(view, btn) {{
   document.getElementById('view-' + view).classList.add('active');
   btn.classList.add('active');
 }}
-
 function triggerRefresh(btn) {{
   btn.disabled = true;
   btn.textContent = '↻ Actualizando...';
   fetch('https://api.github.com/repos/MicaelaGonzalezEscudero/agua-dashboard/actions/workflows/generate_dashboard.yml/dispatches', {{
     method: 'POST',
-    headers: {{
-      'Authorization': 'token {os.environ.get("GH_PAT", "")}',
-      'Content-Type': 'application/json'
-    }},
+    headers: {{'Authorization': 'token {gh_pat}', 'Content-Type': 'application/json'}},
     body: JSON.stringify({{ref: 'main'}})
   }}).then(r => {{
     if (r.status === 204) {{
       btn.textContent = '✓ Generando...';
-      setTimeout(() => {{ window.location.reload(); }}, 25000);
+      setTimeout(() => window.location.reload(), 25000);
     }} else {{
       btn.textContent = '↻ Actualizar';
       btn.disabled = false;
     }}
-  }}).catch(() => {{
-    btn.textContent = '↻ Actualizar';
-    btn.disabled = false;
-  }});
+  }}).catch(() => {{ btn.textContent = '↻ Actualizar'; btn.disabled = false; }});
 }}
 </script>
 </body>
 </html>'''
-    return html
 
 if __name__ == "__main__":
     print("Leyendo datos de Google Sheets...")
