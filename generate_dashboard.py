@@ -27,7 +27,7 @@ def process_data(records):
         tomo = str(r.get('Tomó agua', ''))
         comida = next((c for c in COMIDAS if c.lower() in comida_raw.lower()), None)
         if comida is None:
-          continue
+            continue
         if fecha not in data:
             data[fecha] = {}
         data[fecha][comida] = 'si' if 'Sí' in tomo or 'si' in tomo.lower() else 'no'
@@ -43,6 +43,9 @@ def generate_html(data):
     today = datetime.now(BA_TZ)
     today_key = today.strftime('%d/%m/%Y')
     updated_at = today.strftime('%d/%m/%Y %H:%M')
+
+    print(f"Today key: {today_key}")
+    print(f"Datos encontrados: {data}")
 
     all_dates = sorted(data.keys(), key=lambda d: datetime.strptime(d, '%d/%m/%Y') if d else datetime.min)
     last_30 = all_dates[-30:] if len(all_dates) >= 30 else all_dates
