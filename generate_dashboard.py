@@ -25,7 +25,9 @@ def process_data(records):
         fecha = str(r.get('Fecha', ''))
         comida_raw = str(r.get('Comida', ''))
         tomo = str(r.get('Tomó agua', ''))
-        comida = next((c for c in COMIDAS if c.lower() in comida_raw.lower()), comida_raw)
+        comida = next((c for c in COMIDAS if c.lower() in comida_raw.lower()), None)
+        if comida is None:
+          continue
         if fecha not in data:
             data[fecha] = {}
         data[fecha][comida] = 'si' if 'Sí' in tomo or 'si' in tomo.lower() else 'no'
